@@ -2,15 +2,20 @@
 
 マルチプレイ中にみんなで見つけた場所の座標を共有・管理できる Web アプリです。
 
-![screenshot](https://img.shields.io/badge/Node.js-Express-green) ![license](https://img.shields.io/badge/license-ISC-blue)
+![Node.js](https://img.shields.io/badge/Node.js-Express-green) ![license](https://img.shields.io/badge/license-ISC-blue)
 
 ## 機能
 
-- 📍 **座標の登録** — 場所の名前・X/Z座標・ディメンション・メモを保存
+- 📍 **座標の登録** — 場所の名前・X/Z座標・ディメンション・カテゴリ・メモを保存
+- ✏️ **編集** — 登録済みの座標をその場で編集
 - 📋 **ワンクリックコピー** — 座標をクリックするだけでクリップボードにコピー
-- 🔍 **検索・フィルター** — 名前/メモで検索、ディメンション別に絞り込み
+- 🔍 **検索・フィルター** — 名前/メモで検索、ディメンション・カテゴリ別に絞り込み
 - 🗑️ **削除** — 確認ダイアログ付きで誤削除を防止
 - 🌍 **ディメンション対応** — オーバーワールド / ネザー / エンドを色分け表示
+
+## 対応カテゴリ
+
+拠点 / 農場 / 村 / ウッドランドマンション / ピリジャー前哨基地 / 砂漠の神殿 / ジャングルの神殿 / イグルー / 海底神殿 / 沈没船 / 廃坑 / 要塞 / ネザー要塞 / エンドシティ / 資源 / その他
 
 ## 技術スタック
 
@@ -36,23 +41,40 @@ npm start
 
 ブラウザで [http://localhost:3000](http://localhost:3000) を開く。
 
+## サーバーへのデプロイ・更新
+
+```bash
+# 初回
+git clone https://github.com/LieQuz/minecraft-coordinates-manager.git
+cd minecraft-coordinates-manager
+npm install
+npm install -g pm2
+pm2 start server.js --name minecraft-coords
+pm2 save && pm2 startup
+
+# 更新時
+git pull && pm2 restart minecraft-coords
+```
+
 ## API
 
 | メソッド | エンドポイント | 説明 |
 |----------|----------------|------|
 | `GET` | `/api/coordinates` | 一覧取得（`?search=`, `?dimension=` でフィルター） |
 | `POST` | `/api/coordinates` | 座標を追加 |
+| `PUT` | `/api/coordinates/:id` | 座標を編集 |
 | `DELETE` | `/api/coordinates/:id` | 座標を削除 |
 
-### POST リクエスト例
+### POST / PUT リクエスト例
 
 ```json
 {
-  "name": "拠点",
-  "x": 100,
-  "z": -200,
+  "name": "海底神殿",
+  "x": 512,
+  "z": -1024,
   "dimension": "overworld",
-  "notes": "スタート地点"
+  "category": "海底神殿",
+  "notes": "コンジットあり"
 }
 ```
 
@@ -66,7 +88,7 @@ minecraft-coordinates-manager/
 │   ├── index.html   # UI
 │   ├── style.css    # スタイル
 │   └── app.js       # フロントエンドロジック
-└── coordinates.db   # データベース（自動生成）
+└── coordinates.db   # データベース（自動生成・gitignore済み）
 ```
 
 ## LAN 内での共有
@@ -76,4 +98,7 @@ minecraft-coordinates-manager/
 ```bash
 # Mac でローカル IP を確認
 ipconfig getifaddr en0
+
+# Linux でローカル IP を確認
+ip a | grep "inet " | grep -v 127
 ```
