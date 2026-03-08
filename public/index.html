@@ -25,70 +25,6 @@
   </header>
 
   <main>
-    <!-- 追加フォーム -->
-    <section class="card" id="add-section">
-      <div class="card-title">
-        <span class="card-icon">＋</span>
-        <h2>新しい場所を追加</h2>
-      </div>
-      <form id="add-form">
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label for="name">場所の名前 <span class="required">*</span></label>
-            <input type="text" id="name" placeholder="例：拠点、村、砂漠神殿" required />
-          </div>
-          <div class="form-group coord-group">
-            <label>座標 (X / Z) <span class="required">*</span></label>
-            <div class="coord-inputs">
-              <div class="coord-field">
-                <span class="coord-label x">X</span>
-                <input type="number" id="x" placeholder="0" required />
-              </div>
-              <div class="coord-field">
-                <span class="coord-label z">Z</span>
-                <input type="number" id="z" placeholder="0" required />
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="dimension">ディメンション</label>
-            <select id="dimension">
-              <option value="overworld">🌍 オーバーワールド</option>
-              <option value="nether">🔥 ネザー</option>
-              <option value="end">🌌 エンド</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="category">カテゴリ</label>
-            <select id="category">
-              <option value="拠点">🏠 拠点</option>
-              <option value="農場">🌾 農場</option>
-              <option value="村">🏘️ 村</option>
-              <option value="ウッドランドマンション">🏚️ ウッドランドマンション</option>
-              <option value="ピリジャー前哨基地">🗼 ピリジャー前哨基地</option>
-              <option value="砂漠の神殿">🏜️ 砂漠の神殿</option>
-              <option value="ジャングルの神殿">🌿 ジャングルの神殿</option>
-              <option value="イグルー">🧊 イグルー</option>
-              <option value="海底神殿">🌊 海底神殿</option>
-              <option value="沈没船">⚓ 沈没船</option>
-              <option value="廃坑">🕳️ 廃坑</option>
-              <option value="要塞">🏯 要塞</option>
-              <option value="ネザー要塞">🔥 ネザー要塞</option>
-              <option value="エンドシティ">🌆 エンドシティ</option>
-              <option value="資源">💎 資源</option>
-              <option value="その他" selected>📌 その他</option>
-            </select>
-          </div>
-          <div class="form-group full-width">
-            <label for="notes">メモ <span class="optional">任意</span></label>
-            <textarea id="notes" placeholder="備考や特記事項など..."></textarea>
-          </div>
-        </div>
-        <div id="form-error" class="error-msg" hidden></div>
-        <button type="submit" class="btn btn-primary">追加する</button>
-      </form>
-    </section>
-
     <!-- フィルター & 検索 -->
     <section class="filter-bar">
       <div class="search-wrap">
@@ -181,6 +117,73 @@
       </div>
     </div>
   </div>
+
+  <!-- 追加モーダル -->
+  <div id="add-modal-overlay" class="modal-overlay">
+    <div class="modal edit-modal">
+      <h3>＋ 新しい場所を追加</h3>
+      <form id="add-form">
+        <div class="form-group">
+          <label for="name">場所の名前 <span class="required">*</span></label>
+          <input type="text" id="name" placeholder="例：拠点、村、砂漠神殿" required />
+        </div>
+        <div class="form-group">
+          <label>座標 (X / Z) <span class="required">*</span></label>
+          <div class="coord-inputs">
+            <div class="coord-field">
+              <span class="coord-label x">X</span>
+              <input type="number" id="x" placeholder="0" required />
+            </div>
+            <div class="coord-field">
+              <span class="coord-label z">Z</span>
+              <input type="number" id="z" placeholder="0" required />
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="dimension">ディメンション</label>
+          <select id="dimension">
+            <option value="overworld">🌍 オーバーワールド</option>
+            <option value="nether">🔥 ネザー</option>
+            <option value="end">🌌 エンド</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="category">カテゴリ</label>
+          <select id="category">
+            <option value="拠点">🏠 拠点</option>
+            <option value="農場">🌾 農場</option>
+            <option value="村">🏘️ 村</option>
+            <option value="ウッドランドマンション">🏚️ ウッドランドマンション</option>
+            <option value="ピリジャー前哨基地">🗼 ピリジャー前哨基地</option>
+            <option value="砂漠の神殿">🏜️ 砂漠の神殿</option>
+            <option value="ジャングルの神殿">🌿 ジャングルの神殿</option>
+            <option value="イグルー">🧊 イグルー</option>
+            <option value="海底神殿">🌊 海底神殿</option>
+            <option value="沈没船">⚓ 沈没船</option>
+            <option value="廃坑">🕳️ 廃坑</option>
+            <option value="要塞">🏯 要塞</option>
+            <option value="ネザー要塞">🔥 ネザー要塞</option>
+            <option value="エンドシティ">🌆 エンドシティ</option>
+            <option value="資源">💎 資源</option>
+            <option value="その他" selected>📌 その他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="notes">メモ <span class="optional">任意</span></label>
+          <textarea id="notes" placeholder="備考や特記事項など..."></textarea>
+        </div>
+        <div id="form-error" class="error-msg" hidden></div>
+        <div class="modal-buttons">
+          <button type="submit" class="btn btn-primary" style="margin-top:0">追加する</button>
+          <button type="button" class="btn btn-ghost" id="add-cancel">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button id="fab" class="fab" title="新しい場所を追加">＋</button>
 
   <!-- コピー通知 -->
   <div id="copy-toast" class="toast" hidden>コピーしました！</div>

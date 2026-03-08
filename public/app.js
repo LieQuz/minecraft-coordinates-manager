@@ -46,6 +46,10 @@ const modalConfirm = document.getElementById('modal-confirm');
 const modalCancel = document.getElementById('modal-cancel');
 const copyToast = document.getElementById('copy-toast');
 
+const addModalOverlay = document.getElementById('add-modal-overlay');
+const addCancel = document.getElementById('add-cancel');
+const fab = document.getElementById('fab');
+
 const editModalOverlay = document.getElementById('edit-modal-overlay');
 const editForm = document.getElementById('edit-form');
 const editError = document.getElementById('edit-error');
@@ -176,6 +180,16 @@ async function loadCoords() {
 }
 
 // ===== Form =====
+fab.addEventListener('click', () => {
+  addForm.reset();
+  formError.hidden = true;
+  addModalOverlay.classList.add('open');
+});
+addCancel.addEventListener('click', () => addModalOverlay.classList.remove('open'));
+addModalOverlay.addEventListener('click', (e) => {
+  if (e.target === addModalOverlay) addModalOverlay.classList.remove('open');
+});
+
 addForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   formError.hidden = true;
@@ -192,8 +206,8 @@ addForm.addEventListener('submit', async (e) => {
   try {
     await addCoord(data);
     addForm.reset();
+    addModalOverlay.classList.remove('open');
     await loadCoords();
-    document.getElementById('list-section').scrollIntoView({ behavior: 'smooth' });
   } catch (err) {
     formError.textContent = err.message;
     formError.hidden = false;
