@@ -29,7 +29,7 @@ const DIM_LABELS = {
 let deleteTargetId = null;
 let searchTimeout = null;
 let allCoords = [];
-let activeCategories = new Set(CATEGORIES.map(c => c.value)); // 全部ON
+let selectedCategory = null; // null = すべて表示
 
 // ===== DOM refs =====
 const addForm = document.getElementById('add-form');
@@ -49,18 +49,21 @@ const copyToast = document.getElementById('copy-toast');
 // ===== Build category pills =====
 function buildPills() {
   categoryPillsEl.innerHTML = CATEGORIES.map(c => `
-    <span class="cat-pill active" data-cat="${escHtml(c.value)}">
+    <span class="cat-pill" data-cat="${escHtml(c.value)}">
       ${c.icon} ${c.value}
     </span>`).join('');
 
   categoryPillsEl.querySelectorAll('.cat-pill').forEach(pill => {
     pill.addEventListener('click', () => {
       const cat = pill.dataset.cat;
-      if (activeCategories.has(cat)) {
-        activeCategories.delete(cat);
+      if (selectedCategory === cat) {
+        // 同じピルを再クリック → 全表示に戻す
+        selectedCategory = null;
         pill.classList.remove('active');
       } else {
-        activeCategories.add(cat);
+        // 別のピルをクリック → そのカテゴリだけ表示
+        selectedCategory = cat;
+        categoryPillsEl.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
       }
       applyFilters();
@@ -97,7 +100,9 @@ async function deleteCoord(id) {
 
 // ===== Filter & Render =====
 function applyFilters() {
-  const filtered = allCoords.filter(c => activeCategories.has(c.category));
+  const filtered = selectedCategory
+    ? allCoords.filter(c => c.category === selectedCategory)
+    : allCoords;
   renderCoords(filtered);
 }
 
@@ -193,9 +198,8 @@ filterDimension.addEventListener('change', loadCoords);
 clearFiltersBtn.addEventListener('click', () => {
   searchInput.value = '';
   filterDimension.value = '';
-  // カテゴリも全部ON
-  activeCategories = new Set(CATEGORIES.map(c => c.value));
-  categoryPillsEl.querySelectorAll('.cat-pill').forEach(p => p.classList.add('active'));
+  selectedCategory = null;
+  categoryPillsEl.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
   loadCoords();
 });
 
