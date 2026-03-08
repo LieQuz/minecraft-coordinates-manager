@@ -1,4 +1,5 @@
 node_modules/
 coordinates.db
+access.token
 *.log
 .DS_Store

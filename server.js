@@ -1,13 +1,59 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+const cookieParser = require('cookie-parser');
 const db = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const COOKIE_NAME = 'mc_access';
+const COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30日
+const TOKEN_FILE = path.join(__dirname, 'access.token');
+
+// トークンの読み込み or 生成
+let ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+if (!ACCESS_TOKEN) {
+  if (fs.existsSync(TOKEN_FILE)) {
+    ACCESS_TOKEN = fs.readFileSync(TOKEN_FILE, 'utf-8').trim();
+  } else {
+    ACCESS_TOKEN = crypto.randomBytes(24).toString('hex');
+    fs.writeFileSync(TOKEN_FILE, ACCESS_TOKEN);
+    console.log('🔑 アクセストークンを生成しました (access.token)');
+  }
+}
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+
+// ===== 認証ミドルウェア =====
+function requireAuth(req, res, next) {
+  // ?key=TOKEN でアクセス → Cookie にセットしてリダイレクト
+  if (req.query.key) {
+    if (req.query.key === ACCESS_TOKEN) {
+      res.cookie(COOKIE_NAME, ACCESS_TOKEN, {
+        maxAge: COOKIE_MAX_AGE,
+        httpOnly: true,
+        sameSite: 'lax',
+      });
+      // クエリパラメータを除いた URL にリダイレクト
+      return res.redirect(req.path === '/' ? '/' : req.path);
+    }
+    return res.status(403).send('❌ アクセスキーが無効です');
+  }
+
+  // Cookie 確認
+  if (req.cookies[COOKIE_NAME] === ACCESS_TOKEN) {
+    return next();
+  }
+
+  return res.status(403).sendFile(path.join(__dirname, 'public', 'denied.html'));
+}
+
+// 静的ファイルより前に認証を挟む
+app.use(requireAuth);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // GET all coordinates (with optional filters)
@@ -103,4 +149,5 @@ app.get('/{*splat}', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🟢 Minecraft座標マネージャー起動中: http://localhost:${PORT}`);
+  console.log(`🔑 アクセスURL: http://localhost:${PORT}/?key=${ACCESS_TOKEN}`);
 });
