@@ -152,14 +152,14 @@ function renderCoords(coords) {
           <div class="coord-xyz" title="クリックでコピー" onclick="copyCoords(${c.x}, ${c.z})">
             <span><span class="axis">X</span><span class="cx">${c.x}</span></span>
             <span><span class="axis">Z</span><span class="cz">${c.z}</span></span>
-            <span class="copy-hint">📋 コピー</span>
+            <span class="copy-hint">📋</span>
           </div>
           ${c.notes ? `<div class="coord-notes">${escHtml(c.notes)}</div>` : ''}
           <div class="coord-meta">🕐 ${date}</div>
         </div>
         <div class="coord-actions">
-          <button class="btn-icon" onclick="openEdit(${c.id})" title="編集">✏️</button>
-          <button class="btn-icon delete" onclick="confirmDelete(${c.id}, '${escAttr(c.name)}')" title="削除">🗑️</button>
+          <button class="btn-icon" onclick="openEdit(${c.id})" title="編集">✏️ 編集</button>
+          <button class="btn-icon delete" onclick="confirmDelete(${c.id}, '${escAttr(c.name)}')" title="削除">🗑️ 削除</button>
         </div>
       </div>`;
   }).join('');
