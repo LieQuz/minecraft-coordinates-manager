@@ -50,12 +50,33 @@
               </div>
             </div>
           </div>
-          <div class="form-group full-width">
+          <div class="form-group">
             <label for="dimension">ディメンション</label>
             <select id="dimension">
               <option value="overworld">🌍 オーバーワールド</option>
               <option value="nether">🔥 ネザー</option>
               <option value="end">🌌 エンド</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="category">カテゴリ</label>
+            <select id="category">
+              <option value="拠点">🏠 拠点</option>
+              <option value="農場">🌾 農場</option>
+              <option value="村">🏘️ 村</option>
+              <option value="ウッドランドマンション">🏚️ ウッドランドマンション</option>
+              <option value="ピリジャー前哨基地">🗼 ピリジャー前哨基地</option>
+              <option value="砂漠の神殿">🏜️ 砂漠の神殿</option>
+              <option value="ジャングルの神殿">🌿 ジャングルの神殿</option>
+              <option value="イグルー">🧊 イグルー</option>
+              <option value="海底神殿">🌊 海底神殿</option>
+              <option value="沈没船">⚓ 沈没船</option>
+              <option value="廃坑">🕳️ 廃坑</option>
+              <option value="要塞">🏯 要塞</option>
+              <option value="ネザー要塞">🔥 ネザー要塞</option>
+              <option value="エンドシティ">🌆 エンドシティ</option>
+              <option value="資源">💎 資源</option>
+              <option value="その他" selected>📌 その他</option>
             </select>
           </div>
           <div class="form-group full-width">
@@ -82,6 +103,12 @@
       </select>
       <button class="btn btn-ghost" id="clear-filters">クリア</button>
     </section>
+
+    <!-- カテゴリフィルター -->
+    <div class="category-filter">
+      <div class="category-filter-label">カテゴリ</div>
+      <div class="category-pills" id="category-pills"></div>
+    </div>
 
     <!-- 座標一覧 -->
     <section id="list-section">
