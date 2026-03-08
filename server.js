@@ -57,7 +57,39 @@ app.post('/api/coordinates', (req, res) => {
   res.status(201).json(coord);
 });
 
-// DELETE coordinate
+// PUT (edit) coordinate
+app.put('/api/coordinates/:id', (req, res) => {
+  const { name, x, z, dimension, category, notes } = req.body;
+
+  if (!name || x === undefined || z === undefined) {
+    return res.status(400).json({ error: '名前と座標(X/Z)は必須です' });
+  }
+
+  const parsedX = parseInt(x);
+  const parsedZ = parseInt(z);
+  if (isNaN(parsedX) || isNaN(parsedZ)) {
+    return res.status(400).json({ error: '座標は整数で入力してください' });
+  }
+
+  const validDimensions = ['overworld', 'nether', 'end'];
+  const validDim = validDimensions.includes(dimension) ? dimension : 'overworld';
+
+  const existing = db.getById(req.params.id);
+  if (!existing) return res.status(404).json({ error: '見つかりませんでした' });
+
+  const updated = db.update(req.params.id, {
+    name: name.trim(),
+    x: parsedX,
+    z: parsedZ,
+    dimension: validDim,
+    category: category || 'その他',
+    notes: notes ? notes.trim() : '',
+  });
+
+  res.json(updated);
+});
+
+
 app.delete('/api/coordinates/:id', (req, res) => {
   const deleted = db.remove(req.params.id);
   if (!deleted) return res.status(404).json({ error: '見つかりませんでした' });

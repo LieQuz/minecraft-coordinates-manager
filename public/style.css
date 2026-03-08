@@ -542,7 +542,23 @@ textarea { resize: vertical; min-height: 68px; }
 
 .modal-buttons { display: flex; gap: 10px; justify-content: center; }
 
-/* ===== Toast ===== */
+.modal.edit-modal {
+  max-width: 480px;
+  text-align: left;
+}
+
+.edit-modal h3 { margin-bottom: 20px; font-size: 1rem; }
+
+.edit-modal .form-group {
+  margin-bottom: 14px;
+}
+
+.edit-modal .modal-buttons {
+  justify-content: flex-start;
+  margin-top: 20px;
+}
+
+
 .toast {
   position: fixed;
   bottom: 28px;

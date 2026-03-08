@@ -59,4 +59,11 @@ const remove = (id) => {
   return result.changes > 0;
 };
 
-module.exports = { getAll, getById, create, remove };
+const update = (id, { name, x, z, dimension, category, notes }) => {
+  db.prepare(
+    'UPDATE coordinates SET name=?, x=?, z=?, dimension=?, category=?, notes=? WHERE id=?'
+  ).run(name, x, z, dimension, category, notes, id);
+  return getById(id);
+};
+
+module.exports = { getAll, getById, create, update, remove };

@@ -46,7 +46,18 @@ const modalConfirm = document.getElementById('modal-confirm');
 const modalCancel = document.getElementById('modal-cancel');
 const copyToast = document.getElementById('copy-toast');
 
-// ===== Build category pills =====
+const editModalOverlay = document.getElementById('edit-modal-overlay');
+const editForm = document.getElementById('edit-form');
+const editError = document.getElementById('edit-error');
+const editCancel = document.getElementById('edit-cancel');
+const editCategoryEl = document.getElementById('edit-category');
+
+// カテゴリ選択肢を編集モーダルにも反映
+editCategoryEl.innerHTML = CATEGORIES.map(c =>
+  `<option value="${c.value}">${c.icon} ${c.value}</option>`
+).join('');
+
+
 function buildPills() {
   categoryPillsEl.innerHTML = CATEGORIES.map(c => `
     <span class="cat-pill" data-cat="${escHtml(c.value)}">
@@ -143,6 +154,7 @@ function renderCoords(coords) {
           <div class="coord-meta">🕐 ${date}</div>
         </div>
         <div class="coord-actions">
+          <button class="btn-icon" onclick="openEdit(${c.id})" title="編集">✏️</button>
           <button class="btn-icon delete" onclick="confirmDelete(${c.id}, '${escAttr(c.name)}')" title="削除">🗑️</button>
         </div>
       </div>`;
@@ -239,6 +251,63 @@ modalOverlay.addEventListener('click', (e) => {
   if (e.target === modalOverlay) {
     modalOverlay.classList.remove('open');
     deleteTargetId = null;
+  }
+});
+
+// ===== Edit modal =====
+let editTargetId = null;
+
+function openEdit(id) {
+  const coord = allCoords.find(c => c.id === id);
+  if (!coord) return;
+  editTargetId = id;
+  document.getElementById('edit-name').value = coord.name;
+  document.getElementById('edit-x').value = coord.x;
+  document.getElementById('edit-z').value = coord.z;
+  document.getElementById('edit-dimension').value = coord.dimension;
+  document.getElementById('edit-category').value = coord.category;
+  document.getElementById('edit-notes').value = coord.notes || '';
+  editError.hidden = true;
+  editModalOverlay.classList.add('open');
+}
+
+editForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  editError.hidden = true;
+  const data = {
+    name: document.getElementById('edit-name').value,
+    x: document.getElementById('edit-x').value,
+    z: document.getElementById('edit-z').value,
+    dimension: document.getElementById('edit-dimension').value,
+    category: document.getElementById('edit-category').value,
+    notes: document.getElementById('edit-notes').value,
+  };
+  try {
+    const res = await fetch(`${API}/${editTargetId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || '更新に失敗しました');
+    editModalOverlay.classList.remove('open');
+    editTargetId = null;
+    await loadCoords();
+  } catch (err) {
+    editError.textContent = err.message;
+    editError.hidden = false;
+  }
+});
+
+editCancel.addEventListener('click', () => {
+  editModalOverlay.classList.remove('open');
+  editTargetId = null;
+});
+
+editModalOverlay.addEventListener('click', (e) => {
+  if (e.target === editModalOverlay) {
+    editModalOverlay.classList.remove('open');
+    editTargetId = null;
   }
 });
 
