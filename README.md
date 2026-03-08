@@ -25,6 +25,7 @@
 | サーバー | Node.js + Express |
 | データベース | SQLite (better-sqlite3) |
 | フロントエンド | Vanilla HTML / CSS / JavaScript |
+| 認証 | トークン + Cookie（express-rate-limit でブルートフォース対策）|
 
 ## セットアップ
 
@@ -61,6 +62,17 @@ npm start
 ACCESS_TOKEN=mytoken npm start
 ```
 
+## セキュリティ
+
+| 対策 | 内容 |
+|------|------|
+| タイミング攻撃対策 | トークン比較に `crypto.timingSafeEqual()` を使用 |
+| ブルートフォース対策 | 15分間に20リクエストを超えると自動ブロック |
+| Cookie保護 | `httpOnly` + `sameSite=lax`、HTTPS環境では `Secure` フラグ自動付与 |
+| リクエスト制限 | ボディサイズ上限 16KB |
+| 入力バリデーション | 名前100文字・メモ1000文字の上限 |
+| SQLインジェクション対策 | プリペアドステートメントのみ使用 |
+
 ## サーバーへのデプロイ・更新
 
 ```bash
@@ -73,7 +85,7 @@ pm2 start server.js --name minecraft-coords
 pm2 save && pm2 startup
 
 # 更新時
-git pull && pm2 restart minecraft-coords
+git pull && npm install && pm2 restart minecraft-coords
 ```
 
 ## API
