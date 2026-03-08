@@ -73,21 +73,6 @@ ACCESS_TOKEN=mytoken npm start
 | 入力バリデーション | 名前100文字・メモ1000文字の上限 |
 | SQLインジェクション対策 | プリペアドステートメントのみ使用 |
 
-## サーバーへのデプロイ・更新
-
-```bash
-# 初回
-git clone https://github.com/LieQuz/minecraft-coordinates-manager.git
-cd minecraft-coordinates-manager
-npm install
-npm install -g pm2
-pm2 start server.js --name minecraft-coords
-pm2 save && pm2 startup
-
-# 更新時
-git pull && npm install && pm2 restart minecraft-coords
-```
-
 ## API
 
 | メソッド | エンドポイント | 説明 |
