@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
 const db = require('./database');
 
 const app = express();
@@ -25,34 +26,56 @@ if (!ACCESS_TOKEN) {
 }
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '16kb' }));
 app.use(cookieParser());
+
+// 認証エンドポイントへのレート制限（ブルートフォース対策）
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15分
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: '❌ リクエストが多すぎます。しばらく待ってから再試行してください。',
+});
+
+// タイミング攻撃に強い定数時間比較
+function safeTokenEqual(a, b) {
+  try {
+    return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  } catch {
+    return false;
+  }
+}
 
 // ===== 認証ミドルウェア =====
 function requireAuth(req, res, next) {
   // ?key=TOKEN でアクセス → Cookie にセットしてリダイレクト
   if (req.query.key) {
-    if (req.query.key === ACCESS_TOKEN) {
+    if (safeTokenEqual(req.query.key, ACCESS_TOKEN)) {
+      const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
       res.cookie(COOKIE_NAME, ACCESS_TOKEN, {
         maxAge: COOKIE_MAX_AGE,
         httpOnly: true,
         sameSite: 'lax',
+        secure: isSecure,
       });
-      // クエリパラメータを除いた URL にリダイレクト
+      // クエリパラメータを除いた URL にリダイレクト（トークンをURLから消す）
       return res.redirect(req.path === '/' ? '/' : req.path);
     }
     return res.status(403).send('❌ アクセスキーが無効です');
   }
 
   // Cookie 確認
-  if (req.cookies[COOKIE_NAME] === ACCESS_TOKEN) {
+  const cookie = req.cookies[COOKIE_NAME];
+  if (cookie && safeTokenEqual(cookie, ACCESS_TOKEN)) {
     return next();
   }
 
   return res.status(403).sendFile(path.join(__dirname, 'public', 'denied.html'));
 }
 
-// 静的ファイルより前に認証を挟む
+// 静的ファイルより前に認証を挟む（認証エンドポイントにレート制限も適用）
+app.use(authLimiter);
 app.use(requireAuth);
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -76,6 +99,12 @@ app.post('/api/coordinates', (req, res) => {
 
   if (!name || x === undefined || z === undefined) {
     return res.status(400).json({ error: '名前と座標(X/Z)は必須です' });
+  }
+  if (typeof name !== 'string' || name.trim().length > 100) {
+    return res.status(400).json({ error: '名前は100文字以内で入力してください' });
+  }
+  if (notes && (typeof notes !== 'string' || notes.length > 1000)) {
+    return res.status(400).json({ error: 'メモは1000文字以内で入力してください' });
   }
 
   const parsedX = parseInt(x);
@@ -109,6 +138,12 @@ app.put('/api/coordinates/:id', (req, res) => {
 
   if (!name || x === undefined || z === undefined) {
     return res.status(400).json({ error: '名前と座標(X/Z)は必須です' });
+  }
+  if (typeof name !== 'string' || name.trim().length > 100) {
+    return res.status(400).json({ error: '名前は100文字以内で入力してください' });
+  }
+  if (notes && (typeof notes !== 'string' || notes.length > 1000)) {
+    return res.status(400).json({ error: 'メモは1000文字以内で入力してください' });
   }
 
   const parsedX = parseInt(x);
