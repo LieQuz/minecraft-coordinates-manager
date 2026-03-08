@@ -12,6 +12,7 @@
 - 🔍 **検索・フィルター** — 名前/メモで検索、ディメンション・カテゴリ別に絞り込み
 - 🗑️ **削除** — 確認ダイアログ付きで誤削除を防止
 - 🌍 **ディメンション対応** — オーバーワールド / ネザー / エンドを色分け表示
+- 🔑 **招待リンク認証** — トークン付きURLを知っている人だけアクセス可能
 
 ## 対応カテゴリ
 
@@ -39,7 +40,26 @@ npm install
 npm start
 ```
 
-ブラウザで [http://localhost:3000](http://localhost:3000) を開く。
+起動するとターミナルにアクセスURLが表示されます：
+
+```
+🟢 Minecraft座標マネージャー起動中: http://localhost:3000
+🔑 アクセスURL: http://localhost:3000/?key=xxxxxxxxxxxxxxxx
+```
+
+このURLをフレンドに共有するだけでOKです。  
+ブラウザが Cookie を記憶するので、以降はキーなしで普通にアクセスできます（有効期限30日）。
+
+## アクセス制御
+
+- トークンは初回起動時に自動生成され `access.token` ファイルに保存されます
+- サーバーを再起動してもトークンは変わりません
+- トークンを変更したい場合は `access.token` を削除して再起動してください
+- `ACCESS_TOKEN` 環境変数で固定トークンを指定することも可能です
+
+```bash
+ACCESS_TOKEN=mytoken npm start
+```
 
 ## サーバーへのデプロイ・更新
 
@@ -82,18 +102,18 @@ git pull && pm2 restart minecraft-coords
 
 ```
 minecraft-coordinates-manager/
-├── server.js        # Express サーバー・API
+├── server.js        # Express サーバー・API・認証
 ├── database.js      # SQLite 操作
 ├── public/
 │   ├── index.html   # UI
 │   ├── style.css    # スタイル
-│   └── app.js       # フロントエンドロジック
+│   ├── app.js       # フロントエンドロジック
+│   └── denied.html  # アクセス拒否ページ
+├── access.token     # アクセストークン（自動生成・gitignore済み）
 └── coordinates.db   # データベース（自動生成・gitignore済み）
 ```
 
 ## LAN 内での共有
-
-同じネットワーク内のフレンドは `http://あなたのIPアドレス:3000` でアクセスできます。
 
 ```bash
 # Mac でローカル IP を確認
@@ -102,3 +122,4 @@ ipconfig getifaddr en0
 # Linux でローカル IP を確認
 ip a | grep "inet " | grep -v 127
 ```
+
