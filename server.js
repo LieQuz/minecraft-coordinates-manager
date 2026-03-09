@@ -29,12 +29,13 @@ app.use(cors());
 app.use(express.json({ limit: '16kb' }));
 app.use(cookieParser());
 
-// 認証エンドポイントへのレート制限（ブルートフォース対策）
-const authLimiter = rateLimit({
+// ?key= によるトークン認証試行にのみ適用するレート制限（ブルートフォース対策）
+const keyAuthLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15分
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => !req.query.key, // ?key= がないリクエストはスキップ
   message: '❌ リクエストが多すぎます。しばらく待ってから再試行してください。',
 });
 
@@ -74,8 +75,8 @@ function requireAuth(req, res, next) {
   return res.status(403).sendFile(path.join(__dirname, 'public', 'denied.html'));
 }
 
-// 静的ファイルより前に認証を挟む（認証エンドポイントにレート制限も適用）
-app.use(authLimiter);
+// ?key= 認証試行にのみレート制限を適用し、通常リクエストには制限なし
+app.use(keyAuthLimiter);
 app.use(requireAuth);
 app.use(express.static(path.join(__dirname, 'public')));
 
