@@ -140,6 +140,7 @@ function renderCoords(coords) {
     const dimLabel = DIM_LABELS[c.dimension] || c.dimension;
     const catDef = CATEGORIES.find(k => k.value === c.category);
     const catIcon = catDef ? catDef.icon : '📌';
+    const convertedHtml = buildConvertedCoords(c);
     return `
       <div class="coord-card dim-${c.dimension}">
         <div class="dim-stripe"></div>
@@ -154,6 +155,7 @@ function renderCoords(coords) {
             <span><span class="axis">Z</span><span class="cz">${c.z}</span></span>
             <span class="copy-hint">📋</span>
           </div>
+          ${convertedHtml}
           ${c.notes ? `<div class="coord-notes">${escHtml(c.notes)}</div>` : ''}
           <div class="coord-meta">🕐 ${date}</div>
         </div>
@@ -163,6 +165,36 @@ function renderCoords(coords) {
         </div>
       </div>`;
   }).join('');
+}
+
+function buildConvertedCoords(c) {
+  if (c.dimension === 'overworld') {
+    const nx = Math.round(c.x / 8);
+    const nz = Math.round(c.z / 8);
+    return `
+      <div class="coord-converted nether" title="クリックでコピー" onclick="copyCoords(${nx}, ${nz})">
+        <span class="converted-label">🔥 ネザー換算</span>
+        <span class="converted-values">
+          <span><span class="axis">X</span><span class="cx">${nx}</span></span>
+          <span><span class="axis">Z</span><span class="cz">${nz}</span></span>
+        </span>
+        <span class="copy-hint">📋</span>
+      </div>`;
+  }
+  if (c.dimension === 'nether') {
+    const ox = c.x * 8;
+    const oz = c.z * 8;
+    return `
+      <div class="coord-converted overworld" title="クリックでコピー" onclick="copyCoords(${ox}, ${oz})">
+        <span class="converted-label">🌍 オーバーワールド換算</span>
+        <span class="converted-values">
+          <span><span class="axis">X</span><span class="cx">${ox}</span></span>
+          <span><span class="axis">Z</span><span class="cz">${oz}</span></span>
+        </span>
+        <span class="copy-hint">📋</span>
+      </div>`;
+  }
+  return '';
 }
 
 function escHtml(str) {
