@@ -1,88 +1,80 @@
 # ⛏️ Minecraft 座標マネージャー
 
-マルチプレイ中にみんなで見つけた場所の座標を共有・管理できる Web アプリです。
+マルチプレイ中に見つけた場所の座標をみんなで管理・共有できる Web アプリです。
 
 ![Node.js](https://img.shields.io/badge/Node.js-Express-green) ![license](https://img.shields.io/badge/license-ISC-blue)
 
-## 機能
+---
 
-- 📍 **座標の登録** — 場所の名前・X/Z座標・ディメンション・カテゴリ・メモを保存
-- ✏️ **編集** — 登録済みの座標をその場で編集
-- 📋 **ワンクリックコピー** — 座標をクリックするだけでクリップボードにコピー
-- 🔍 **検索・フィルター** — 名前/メモで検索、ディメンション・カテゴリ別に絞り込み
-- 🗑️ **削除** — 確認ダイアログ付きで誤削除を防止
-- 🌍 **ディメンション対応** — オーバーワールド / ネザー / エンドを色分け表示
-- 🔑 **招待リンク認証** — トークン付きURLを知っている人だけアクセス可能
+## できること
+
+- **座標の登録・編集・削除** — 名前・X/Z座標・ディメンション・カテゴリ・メモをまとめて保存できます
+- **ワンクリックコピー** — 座標をクリックするだけでクリップボードに入ります。ゲームに戻ってすぐ使えます
+- **ネザー↔オーバーワールド自動換算** — オーバーワールドの座標を登録するとネザー換算値が自動表示され、その逆も同様です（÷8 / ×8）
+- **検索・絞り込み** — 名前やメモで全文検索、ディメンションやカテゴリでフィルタリングできます
+- **招待リンク認証** — トークン付きURLを知っている人だけアクセスできます。フレンドに URL を送るだけで参加できます
 
 ## 対応カテゴリ
 
 拠点 / 農場 / 村 / ウッドランドマンション / ピリジャー前哨基地 / 砂漠の神殿 / ジャングルの神殿 / イグルー / 海底神殿 / 沈没船 / 廃坑 / 要塞 / ネザー要塞 / エンドシティ / 資源 / その他
 
-## 技術スタック
-
-| 役割 | 技術 |
-|------|------|
-| サーバー | Node.js + Express |
-| データベース | SQLite (better-sqlite3) |
-| フロントエンド | Vanilla HTML / CSS / JavaScript |
-| 認証 | トークン + Cookie（express-rate-limit でブルートフォース対策）|
+---
 
 ## セットアップ
 
 ```bash
-# リポジトリをクローン
 git clone https://github.com/LieQuz/minecraft-coordinates-manager.git
 cd minecraft-coordinates-manager
-
-# 依存パッケージをインストール
 npm install
-
-# サーバーを起動
 npm start
 ```
 
-起動するとターミナルにアクセスURLが表示されます：
+起動するとターミナルにアクセス URL が表示されます。
 
 ```
 🟢 Minecraft座標マネージャー起動中: http://localhost:3000
 🔑 アクセスURL: http://localhost:3000/?key=xxxxxxxxxxxxxxxx
 ```
 
-このURLをフレンドに共有するだけでOKです。  
-ブラウザが Cookie を記憶するので、以降はキーなしで普通にアクセスできます（有効期限30日）。
+この URL をフレンドに送ればすぐ使えます。Cookie が保存されるので、次回からはキーなしで普通にアクセスできます（有効期限 30 日）。
+
+---
 
 ## アクセス制御
 
-- トークンは初回起動時に自動生成され `access.token` ファイルに保存されます
-- サーバーを再起動してもトークンは変わりません
-- トークンを変更したい場合は `access.token` を削除して再起動してください
-- `ACCESS_TOKEN` 環境変数で固定トークンを指定することも可能です
+トークンは初回起動時に自動生成されて `access.token` に保存されます。サーバーを再起動しても変わりません。
+
+トークンをリセットしたい場合は `access.token` を削除して再起動してください。環境変数で固定することも可能です。
 
 ```bash
 ACCESS_TOKEN=mytoken npm start
 ```
+
+---
 
 ## セキュリティ
 
 | 対策 | 内容 |
 |------|------|
 | タイミング攻撃対策 | トークン比較に `crypto.timingSafeEqual()` を使用 |
-| ブルートフォース対策 | レート制限により過剰なリクエストを自動ブロック |
-| Cookie保護 | `httpOnly` + `sameSite=lax`、HTTPS環境では `Secure` フラグ自動付与 |
+| ブルートフォース対策 | `?key=` によるトークン認証試行にのみレート制限を適用（15分に20回） |
+| Cookie 保護 | `httpOnly` + `sameSite=lax`、HTTPS 環境では `Secure` フラグを自動付与 |
 | リクエスト制限 | ボディサイズ上限 16KB |
-| 入力バリデーション | 名前100文字・メモ1000文字の上限 |
-| SQLインジェクション対策 | プリペアドステートメントのみ使用 |
+| 入力バリデーション | 名前 100 文字・メモ 1000 文字の上限 |
+| SQL インジェクション対策 | プリペアドステートメントのみ使用 |
+
+---
 
 ## API
 
 | メソッド | エンドポイント | 説明 |
 |----------|----------------|------|
-| `GET` | `/api/coordinates` | 一覧取得（`?search=`, `?dimension=` でフィルター） |
+| `GET` | `/api/coordinates` | 一覧取得（`?search=`・`?dimension=` でフィルター可） |
 | `POST` | `/api/coordinates` | 座標を追加 |
 | `PUT` | `/api/coordinates/:id` | 座標を編集 |
 | `DELETE` | `/api/coordinates/:id` | 座標を削除 |
 
-### POST / PUT リクエスト例
+**POST / PUT リクエスト例**
 
 ```json
 {
@@ -95,6 +87,19 @@ ACCESS_TOKEN=mytoken npm start
 }
 ```
 
+---
+
+## 技術スタック
+
+| 役割 | 技術 |
+|------|------|
+| サーバー | Node.js + Express |
+| データベース | SQLite（better-sqlite3） |
+| フロントエンド | HTML / CSS / Vanilla JavaScript |
+| 認証 | トークン + Cookie |
+
+---
+
 ## ディレクトリ構成
 
 ```
@@ -106,17 +111,23 @@ minecraft-coordinates-manager/
 │   ├── style.css    # スタイル
 │   ├── app.js       # フロントエンドロジック
 │   └── denied.html  # アクセス拒否ページ
-├── access.token     # アクセストークン（自動生成・gitignore済み）
-└── coordinates.db   # データベース（自動生成・gitignore済み）
+├── access.token     # アクセストークン（自動生成・gitignore 済み）
+└── coordinates.db   # データベース（自動生成・gitignore 済み）
 ```
 
-## LAN 内での共有
+---
+
+## LAN 内で使う場合
+
+同じネットワーク内なら、サーバーを起動している PC のローカル IP でアクセスできます。
 
 ```bash
-# Mac でローカル IP を確認
+# Mac
 ipconfig getifaddr en0
 
-# Linux でローカル IP を確認
+# Linux
 ip a | grep "inet " | grep -v 127
 ```
+
+`http://<ローカルIP>:3000/?key=xxxx` にアクセスすれば OK です。
 
